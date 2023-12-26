@@ -38,17 +38,27 @@ In order to use this nested stack you need to:
 
 ![image](https://github.com/siyotsu/tm-devops-trainee-task/assets/109180406/9a147fb8-7259-449d-bb3e-af5ec0f32f5d)
 
+- Created EFS
+
 ![image](https://github.com/siyotsu/tm-devops-trainee-task/assets/109180406/bf173a78-d503-405b-b1ed-bf63477c0334)
+
+- Created ECS Cluster
 
 ![image](https://github.com/siyotsu/tm-devops-trainee-task/assets/109180406/0048c08c-c4f5-44df-bdd6-8a47ecb76982)
 
+- Created ECS Service
+
 ![image](https://github.com/siyotsu/tm-devops-trainee-task/assets/109180406/4616b723-7cc9-443e-9a84-c914fa9544f5)
 
+- Created ALB
+
 ![image](https://github.com/siyotsu/tm-devops-trainee-task/assets/109180406/ba609ca5-0309-45bb-813d-d70228cb953e)
+
+- Final result
 
 ![image](https://github.com/siyotsu/tm-devops-trainee-task/assets/109180406/6988232b-539c-43ef-8db8-a9761ced08b5)
 
 Problems I encountered during the task:
 1) How to properly use parameters in the nested stack.
-2) How to upload HTML page to the EFS file system through EC2 instance.
+2) How to upload HTML page to the EFS file system through EC2 instance - (The problem was that the instance was created faster than the mount target).
 
