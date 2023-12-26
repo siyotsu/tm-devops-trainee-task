@@ -16,7 +16,6 @@ In order to use this nested stack you need to:
 
 ![image](https://github.com/siyotsu/tm-devops-trainee-task/assets/109180406/fe132bb0-2afd-4383-8be7-9569039540c6)
 
-
 - Replace the links in the main.yaml file with the locations of the above files in your S3 Bucket.
 - Deploy the CloudFormation stack using either the AWS Management Console:
   Go to AWS CloudFormation -> Create Stack
@@ -35,6 +34,15 @@ In order to use this nested stack you need to:
   
 ![image](https://github.com/siyotsu/tm-devops-trainee-task/assets/109180406/6c512d25-ac75-45a8-9d9c-7fe2f2a59a7e)
 
+- When all the steps are successful, we will see the following result
+
+![image](https://github.com/siyotsu/tm-devops-trainee-task/assets/109180406/9a147fb8-7259-449d-bb3e-af5ec0f32f5d)
+
+![image](https://github.com/siyotsu/tm-devops-trainee-task/assets/109180406/bf173a78-d503-405b-b1ed-bf63477c0334)
+
+![image](https://github.com/siyotsu/tm-devops-trainee-task/assets/109180406/ba609ca5-0309-45bb-813d-d70228cb953e)
+
+![image](https://github.com/siyotsu/tm-devops-trainee-task/assets/109180406/6988232b-539c-43ef-8db8-a9761ced08b5)
 
 Problems I encountered during the task:
 1) How to properly use parameters in the nested stack.
