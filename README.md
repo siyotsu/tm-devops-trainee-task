@@ -21,7 +21,7 @@ In order to use this nested stack you need to:
 - Deploy the CloudFormation stack using either the AWS Management Console:
   Go to AWS CloudFormation -> Create Stack
   
-  ![image](https://github.com/siyotsu/tm-devops-trainee-task/assets/109180406/9cfd08ec-4bc7-4e24-9ecb-9558f750874f)
+![image](https://github.com/siyotsu/tm-devops-trainee-task/assets/109180406/9cfd08ec-4bc7-4e24-9ecb-9558f750874f)
   
 - Upload the updated template file named main.yaml -> Next
 
@@ -33,7 +33,8 @@ In order to use this nested stack you need to:
 
 - Your stack will start to deploy step-by-step.
   
-  ![image](https://github.com/siyotsu/tm-devops-trainee-task/assets/109180406/1f9d1d35-168f-4a24-9446-7586376b1c4f)
+![image](https://github.com/siyotsu/tm-devops-trainee-task/assets/109180406/6c512d25-ac75-45a8-9d9c-7fe2f2a59a7e)
+
 
 Problems I encountered during the task:
 1) How to properly use parameters in the nested stack.
