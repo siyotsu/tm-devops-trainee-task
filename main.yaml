@@ -1,0 +1,151 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Main CloudFormation Stack
+
+Parameters:
+  StackName:
+    Type: String
+    Default: dev
+    Description: The name of the parent Fargate networking stack that you created. Necessary
+                 to locate and reference resources created by that stack.
+  EfsName:
+    Type: String
+    Default: tm-devops-trainee-efs
+    Description: Name for Elastic File System.
+  EfsPort:
+    Type: Number
+    Default: 2049
+    Description: Port number for the EFS security group  
+  AlbName:
+    Type: String
+    Default: tm-devops-trainee-alb
+    Description: Name for Application Load Balancer.
+  ECSName:
+    Type: String
+    Default: tm-devops-trainee-cluster
+    Description: Name for ECS Cluster
+  ServiceName:
+    Type: String
+    Default: tm-devops-trainee-service
+    Description: A name for the service
+  FamilyName:
+    Type: String
+    Default: nginx
+    Description: A name for the service
+  ImageUrl:
+    Type: String
+    Default: nginx
+    Description: The url of a docker image that contains the application process that
+                 will handle the traffic for this service
+  ContainerPort:
+    Type: Number
+    Default: 80
+    Description: What port number the application inside the docker container is binding to
+  ContainerCpu:
+    Type: Number
+    Default: 256
+    Description: How much CPU to give the container. 1024 is 1 CPU
+  ContainerMemory:
+    Type: Number
+    Default: 512
+    Description: How much memory in megabytes to give the container
+  Path:
+    Type: String
+    Default: "*"
+    Description: A path on the public load balancer that this service
+                 should be connected to. Use * to send all load balancer
+                 traffic to this service.
+  Priority:
+    Type: Number
+    Default: 1
+    Description: The priority for the routing rule added to the load balancer.
+                 This only applies if your have multiple services which have been
+                 assigned to different paths on the load balancer.
+  DesiredCount:
+    Type: Number
+    Default: 1
+    Description: How many copies of the service task to run
+  Region:
+    Type: String
+    Default: us-east-1
+    Description: AWS Region for CloudWatch Logs
+  SshPort:
+    Type: Number
+    Default: 22
+    Description: Port number for the EC2 security group
+  KeyName:
+    Type: String
+    Default: TESTING
+    Description: The name of an Amazon EC2 key pair
+  InstanceType:
+    Type: String
+    Default: t2.micro
+    Description: Instance type
+  ImageId:
+    Type: AWS::EC2::Image::Id
+    Default: ami-0c7217cdde317cfec
+    Description: Amazon Machine Image (AMI) Id
+
+Resources:
+  # Stack for creating VPC components
+  VPCStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://tm-devops-trainee-cloudformation.s3.amazonaws.com/vpc-stack.yaml
+      Parameters:
+        StackName: !Ref StackName
+
+  # Stack for creating Elastic File System components and EC2 Instance
+  EFSStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://tm-devops-trainee-cloudformation.s3.amazonaws.com/efs-stack.yaml
+      Parameters:
+        VPCId: !GetAtt 'VPCStack.Outputs.VPCId'
+        PublicSubnetOne: !GetAtt 'VPCStack.Outputs.PublicSubnetOne'
+        PublicSubnetTwo: !GetAtt 'VPCStack.Outputs.PublicSubnetTwo'
+        EfsPort: !Ref EfsPort
+        EfsName: !Ref EfsName
+        StackName: !Ref StackName
+        SshPort: !Ref SshPort
+        KeyName: !Ref KeyName
+        InstanceType: !Ref InstanceType
+        ImageId: !Ref ImageId
+  
+  # Stack for creating ECS Cluster and Application Load Balancer
+  ClusterStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://tm-devops-trainee-cloudformation.s3.amazonaws.com/cluster-stack.yaml
+      Parameters:
+        VPCId: !GetAtt 'VPCStack.Outputs.VPCId'
+        PublicSubnetOne: !GetAtt 'VPCStack.Outputs.PublicSubnetOne'
+        PublicSubnetTwo: !GetAtt 'VPCStack.Outputs.PublicSubnetTwo'
+        StackName: !Ref StackName
+        ECSName: !Ref ECSName
+        AlbName: !Ref AlbName
+
+  # Stack for creating ECS Service
+  ServiceStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://tm-devops-trainee-cloudformation.s3.amazonaws.com/service-stack.yaml
+      Parameters:
+        VPCId: !GetAtt 'VPCStack.Outputs.VPCId'
+        PublicSubnetOne: !GetAtt 'VPCStack.Outputs.PublicSubnetOne'
+        PublicSubnetTwo: !GetAtt 'VPCStack.Outputs.PublicSubnetTwo'
+        ElasticFileSystem: !GetAtt 'EFSStack.Outputs.ElasticFileSystem'
+        ClusterName: !GetAtt 'ClusterStack.Outputs.ClusterName'
+        ECSTaskExecutionRole: !GetAtt 'ClusterStack.Outputs.ECSTaskExecutionRole'
+        PublicListener: !GetAtt 'ClusterStack.Outputs.PublicListener'
+        FargateContainerSecurityGroup: !GetAtt 'ClusterStack.Outputs.FargateContainerSecurityGroup'
+        StackName: !Ref StackName
+        ServiceName: !Ref ServiceName
+        FamilyName: !Ref FamilyName
+        ImageUrl: !Ref ImageUrl
+        ContainerPort: !Ref ContainerPort
+        ContainerCpu: !Ref ContainerCpu
+        ContainerMemory: !Ref ContainerMemory
+        Path: !Ref Path
+        Priority: !Ref Priority
+        DesiredCount: !Ref DesiredCount
+        Region: !Ref Region

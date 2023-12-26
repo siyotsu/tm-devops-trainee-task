@@ -1,0 +1,167 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: This cloudformation will create encryped Elastic File System.
+
+Parameters:
+  StackName:
+    Type: String
+    Description: The name of the parent Fargate networking stack that you created. Necessary
+                 to locate and reference resources created by that stack.
+  EfsName:
+    Type: String
+    Description: Name for Elastic File System.
+  EfsPort:
+    Type: Number
+    Description: Port number for the EFS security group
+  SshPort:
+    Type: Number
+    Description: Port number for the EC2 security group
+  KeyName:
+    Type: String
+    Description: The name of an Amazon EC2 key pair
+  InstanceType:
+    Type: String
+    Description: Instance type
+  ImageId:
+    Type: AWS::EC2::Image::Id
+    Description: Amazon Machine Image (AMI) Id
+  VPCId:
+    Type: String
+    Description: VPC Id in which EFS will be created
+  PublicSubnetOne:
+    Type: String
+    Description: Public Subnet One
+  PublicSubnetTwo:
+    Type: String
+    Description: Public Subnet Two
+  
+Resources:
+  # Security group for Elastic File System
+  EFSSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !Ref VPCId
+      GroupName: !Sub ${StackName}-efs-sg
+      GroupDescription: EFS Security Group
+      SecurityGroupIngress:
+        - CidrIp: 0.0.0.0/0
+          IpProtocol: tcp
+          FromPort: !Ref EfsPort
+          ToPort: !Ref EfsPort
+      Tags:
+        - Key: Name
+          Value: !Sub '${StackName}-efs-sg'
+
+  # Egress rule 1 for EFS security group
+  EFSSecurityGroupEgressRuleOne:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      Description: Egress rule 1 for EFS SG
+      GroupId: !Ref 'EFSSecurityGroup'
+      # Allow outbound traffic to EC2 security group
+      DestinationSecurityGroupId: !GetAtt EC2SecurityGroup.GroupId
+      IpProtocol: tcp
+      FromPort: !Ref EfsPort
+      ToPort: !Ref EfsPort
+
+  # Egress rule 2 for EFS security group
+  EFSSecurityGroupEgressRuleTwo:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      Description: Egress rule 2 for EFS SG
+      GroupId: !Ref 'EFSSecurityGroup'
+      # Allow all outbound traffic
+      CidrIp: 0.0.0.0/0
+      IpProtocol: "-1"
+  
+  # Elastic File System resource
+  EFSFileSystem:
+    Type: AWS::EFS::FileSystem
+    Properties:
+      BackupPolicy:
+        Status: ENABLED
+      PerformanceMode: generalPurpose
+      Encrypted: true
+      # Transition data to Infrequent Access (IA) storage after 30 days
+      LifecyclePolicies:
+        - TransitionToIA: AFTER_30_DAYS      
+      FileSystemTags:
+      - Key: Name
+        Value: !Ref EfsName
+  
+  # Mount target for Elastic File System in Public Subnet One
+  EFSMountTargetAZ1:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId:
+        Ref: EFSFileSystem
+      SubnetId: !Ref PublicSubnetOne
+      SecurityGroups:
+      - Ref: EFSSecurityGroup
+  
+  # Mount target for Elastic File System in Public Subnet Two
+  EFSMountTargetAZ2:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId:
+        Ref: EFSFileSystem
+      SubnetId: !Ref PublicSubnetTwo
+      SecurityGroups:
+      - Ref: EFSSecurityGroup
+
+   # Security group for EC2 instance
+  EC2SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !Ref VPCId
+      GroupName: !Sub ${StackName}-ec2-sg
+      GroupDescription: EC2 Web Server Security Group
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: !Ref SshPort
+          ToPort: !Ref SshPort
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - CidrIp: 0.0.0.0/0
+          IpProtocol: "-1"
+        # Allow outbound traffic to EFS security group on specific port
+        - DestinationSecurityGroupId: !GetAtt EFSSecurityGroup.GroupId
+          IpProtocol: tcp
+          FromPort: !Ref EfsPort
+          ToPort: !Ref EfsPort
+      Tags:
+        - Key: Name
+          Value: !Sub '${StackName}-ec2-sg'
+
+  # EC2 instance resource
+  EC2Instance:
+    Type: AWS::EC2::Instance
+    DependsOn: 
+      - EFSSecurityGroup
+      - EFSSecurityGroupEgressRuleOne
+      - EFSSecurityGroupEgressRuleTwo
+      - EFSMountTargetAZ1
+      - EFSMountTargetAZ2
+    Properties:
+      InstanceType: !Ref InstanceType
+      KeyName: !Ref KeyName
+      ImageId: !Ref ImageId 
+      SubnetId: !Ref PublicSubnetOne
+      SecurityGroupIds:
+        - Ref: EC2SecurityGroup
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          sudo apt-get update
+          sudo apt-get install -y nfs-common
+          sudo mkdir /efs
+          sudo mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport ${EFSFileSystem}.efs.${AWS::Region}.amazonaws.com:/ /efs 2> /tmp/mount_error.log
+          sudo echo '<!DOCTYPE html><html><body><h1>Hello, Techmagic!</h1></body></html>' | sudo tee /efs/index.html
+          sudo chmod 777 /efs/index.html
+      Tags:
+        - Key: Name
+          Value: !Sub '${StackName}-ec2-webserver'
+
+Outputs:
+  ElasticFileSystem:
+    Description: Elastic file system.
+    Value: !Ref EFSFileSystem
