@@ -34,11 +34,15 @@ In order to use this nested stack you need to:
   
 ![image](https://github.com/siyotsu/tm-devops-trainee-task/assets/109180406/6c512d25-ac75-45a8-9d9c-7fe2f2a59a7e)
 
-- When all the steps are successful, we will see the following result
+- If all the steps are successful, we will see the following result
 
 ![image](https://github.com/siyotsu/tm-devops-trainee-task/assets/109180406/9a147fb8-7259-449d-bb3e-af5ec0f32f5d)
 
 ![image](https://github.com/siyotsu/tm-devops-trainee-task/assets/109180406/bf173a78-d503-405b-b1ed-bf63477c0334)
+
+![image](https://github.com/siyotsu/tm-devops-trainee-task/assets/109180406/0048c08c-c4f5-44df-bdd6-8a47ecb76982)
+
+![image](https://github.com/siyotsu/tm-devops-trainee-task/assets/109180406/4616b723-7cc9-443e-9a84-c914fa9544f5)
 
 ![image](https://github.com/siyotsu/tm-devops-trainee-task/assets/109180406/ba609ca5-0309-45bb-813d-d70228cb953e)
 
