@@ -28,7 +28,10 @@ In order to use this nested stack you need to:
 - Review your stack -> Submit
 
 - Your stack will start to deploy step-by-step
-- 
-  ![image](https://github.com/siyotsu/tm-devops-trainee-task/assets/109180406/993d1c9c-996c-4f11-a1a0-519f7fe3f74a)
+  
+  ![image](https://github.com/siyotsu/tm-devops-trainee-task/assets/109180406/1f9d1d35-168f-4a24-9446-7586376b1c4f)
 
+Problems I encountered during the task:
+1) How to properly use parameters in the nested stack
+2) How to upload HTML page to the EFS file system through EC2 instance.
 
